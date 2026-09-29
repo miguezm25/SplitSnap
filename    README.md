@@ -11,7 +11,7 @@ y calcula automáticamente quién le debe a quién.
 - Arquitectura MVVM
 - Hilt (inyección de dependencias)
 - Room (base de datos local)
-- CameraX + ML Kit (escaneo de recibos)
+- CameraX
 - Firebase (sincronización)
 
 ## Estado del proyecto
