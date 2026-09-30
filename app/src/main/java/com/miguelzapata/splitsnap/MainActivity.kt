@@ -19,6 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.miguelzapata.splitsnap.ui.Rutas
+import com.miguelzapata.splitsnap.ui.screens.DetalleScreen
+import com.miguelzapata.splitsnap.ui.screens.GruposScreen
 import com.miguelzapata.splitsnap.ui.theme.SplitSnapTheme
 import com.miguelzapata.splitsnap.ui.viewmodel.TestViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,25 +36,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SplitSnapTheme {
-                val viewModel: TestViewModel = hiltViewModel()
-                val contador by viewModel.contador.collectAsState()
+                val navController = rememberNavController()
 
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "Contador: $contador")
-                        Button(onClick = { viewModel.incrementar() }) {
-                            Text("Incrementar")
-                        }
+                NavHost(
+                    navController = navController,
+                    startDestination = Rutas.GRUPOS
+                ) {
+                    composable(Rutas.GRUPOS) {
+                        GruposScreen(
+                            onGrupoClick = {
+                                navController.navigate(Rutas.DETALLE)
+                            }
+                        )
+                    }
+                    composable(Rutas.DETALLE) {
+                        DetalleScreen(
+                            onVolverClick = {
+                                navController.popBackStack()
+                            }
+                        )
                     }
                 }
             }
         }
-        }
-    }
+                }
+            }
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
