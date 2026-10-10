@@ -54,4 +54,15 @@ class GastoViewModel @Inject constructor(
             )
         }
     }
+    fun actualizarGasto(gasto: Gasto) {
+        viewModelScope.launch {
+            gastoRepository.actualizarGasto(gasto)
+        }
+    }
+
+    fun eliminarGasto(gasto: Gasto) {
+        viewModelScope.launch {
+            gastoRepository.eliminarGasto(gasto)
+        }
+    }
 }

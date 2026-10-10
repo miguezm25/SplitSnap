@@ -2,6 +2,7 @@ package com.miguelzapata.splitsnap.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,9 +19,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.miguelzapata.splitsnap.data.local.Gasto
 import com.miguelzapata.splitsnap.domain.Categorias
 import com.miguelzapata.splitsnap.ui.components.DropdownSelector
 import com.miguelzapata.splitsnap.ui.viewmodel.GastoViewModel
@@ -38,6 +41,15 @@ fun DetalleScreen(
     var descripcion by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("") }
     var pagadoPor by remember { mutableStateOf("") }
+    var gastoEnEdicion by remember { mutableStateOf<Gasto?>(null) }
+
+    fun limpiarFormulario() {
+        monto = ""
+        descripcion = ""
+        categoria = ""
+        pagadoPor = ""
+        gastoEnEdicion = null
+    }
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -52,7 +64,7 @@ fun DetalleScreen(
             Text(text = grupo?.nombre ?: "Cargando...")
             Text(text = "Miembros: ${miembros.joinToString(", ")}")
 
-            Text(text = "Agregar gasto")
+            Text(text = if (gastoEnEdicion == null) "Agregar gasto" else "Editando gasto")
 
             OutlinedTextField(
                 value = monto,
@@ -90,28 +102,66 @@ fun DetalleScreen(
                         categoria.isNotBlank() &&
                         pagadoPor.isNotBlank()
                     ) {
-                        viewModel.agregarGasto(montoDouble, descripcion, categoria, pagadoPor)
-                        monto = ""
-                        descripcion = ""
-                        categoria = ""
-                        pagadoPor = ""
+                        val editando = gastoEnEdicion
+                        if (editando == null) {
+                            viewModel.agregarGasto(montoDouble, descripcion, categoria, pagadoPor)
+                        } else {
+                            viewModel.actualizarGasto(
+                                editando.copy(
+                                    monto = montoDouble,
+                                    descripcion = descripcion,
+                                    categoria = categoria,
+                                    pagadoPor = pagadoPor
+                                )
+                            )
+                        }
+                        limpiarFormulario()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Agregar gasto")
+                Text(if (gastoEnEdicion == null) "Agregar gasto" else "Guardar cambios")
+            }
+
+            if (gastoEnEdicion != null) {
+                TextButton(
+                    onClick = { limpiarFormulario() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Cancelar edición")
+                }
             }
 
             Text(text = "Gastos del grupo")
 
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(gastos) { gasto ->
-                    Text(
-                        text = "${gasto.descripcion}: $${gasto.monto} (${gasto.categoria} · pagó ${gasto.pagadoPor})",
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                    )
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${gasto.descripcion}: $${gasto.monto} (${gasto.categoria} · pagó ${gasto.pagadoPor})",
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(onClick = {
+                            gastoEnEdicion = gasto
+                            monto = gasto.monto.toString()
+                            descripcion = gasto.descripcion
+                            categoria = gasto.categoria
+                            pagadoPor = gasto.pagadoPor
+                        }) {
+                            Text("Editar")
+                        }
+                        TextButton(onClick = {
+                            if (gastoEnEdicion?.id == gasto.id) limpiarFormulario()
+                            viewModel.eliminarGasto(gasto)
+                        }) {
+                            Text("Eliminar")
+                        }
+                    }
                 }
             }
         }
