@@ -21,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.miguelzapata.splitsnap.domain.Categorias
+import com.miguelzapata.splitsnap.ui.components.DropdownSelector
 import com.miguelzapata.splitsnap.ui.viewmodel.GastoViewModel
 
 @Composable
@@ -28,7 +30,9 @@ fun DetalleScreen(
     onVolverClick: () -> Unit,
     viewModel: GastoViewModel = hiltViewModel()
 ) {
+    val grupo by viewModel.grupo.collectAsState()
     val gastos by viewModel.gastos.collectAsState()
+    val miembros = grupo?.miembros ?: emptyList()
 
     var monto by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
@@ -36,11 +40,17 @@ fun DetalleScreen(
     var pagadoPor by remember { mutableStateOf("") }
 
     Surface(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
 
             TextButton(onClick = onVolverClick) {
                 Text("← Volver a Grupos")
             }
+
+            Text(text = grupo?.nombre ?: "Cargando...")
+            Text(text = "Miembros: ${miembros.joinToString(", ")}")
 
             Text(text = "Agregar gasto")
 
@@ -58,24 +68,28 @@ fun DetalleScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = categoria,
-                onValueChange = { categoria = it },
-                label = { Text("Categoría") },
-                modifier = Modifier.fillMaxWidth()
+            DropdownSelector(
+                label = "Categoría",
+                opciones = Categorias.lista,
+                seleccionada = categoria,
+                onSeleccion = { categoria = it }
             )
 
-            OutlinedTextField(
-                value = pagadoPor,
-                onValueChange = { pagadoPor = it },
-                label = { Text("Pagado por") },
-                modifier = Modifier.fillMaxWidth()
+            DropdownSelector(
+                label = "Pagado por",
+                opciones = miembros,
+                seleccionada = pagadoPor,
+                onSeleccion = { pagadoPor = it }
             )
 
             Button(
                 onClick = {
                     val montoDouble = monto.toDoubleOrNull()
-                    if (montoDouble != null && descripcion.isNotBlank()) {
+                    if (montoDouble != null &&
+                        descripcion.isNotBlank() &&
+                        categoria.isNotBlank() &&
+                        pagadoPor.isNotBlank()
+                    ) {
                         viewModel.agregarGasto(montoDouble, descripcion, categoria, pagadoPor)
                         monto = ""
                         descripcion = ""
@@ -90,10 +104,10 @@ fun DetalleScreen(
 
             Text(text = "Gastos del grupo")
 
-            LazyColumn {
+            LazyColumn(modifier = Modifier.weight(1f)) {
                 items(gastos) { gasto ->
                     Text(
-                        text = "${gasto.descripcion}: $${gasto.monto} (pagó ${gasto.pagadoPor})",
+                        text = "${gasto.descripcion}: $${gasto.monto} (${gasto.categoria} · pagó ${gasto.pagadoPor})",
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)

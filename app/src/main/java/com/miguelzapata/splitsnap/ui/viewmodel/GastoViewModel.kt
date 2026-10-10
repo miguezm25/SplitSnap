@@ -4,8 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.miguelzapata.splitsnap.data.local.Gasto
+import com.miguelzapata.splitsnap.data.local.Grupo
 import com.miguelzapata.splitsnap.data.repository.GastoRepository
+import com.miguelzapata.splitsnap.data.repository.GrupoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -15,10 +18,20 @@ import javax.inject.Inject
 @HiltViewModel
 class GastoViewModel @Inject constructor(
     private val gastoRepository: GastoRepository,
+    private val grupoRepository: GrupoRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val grupoId: Long = checkNotNull(savedStateHandle["grupoId"])
+
+    private val _grupo = MutableStateFlow<Grupo?>(null)
+    val grupo: StateFlow<Grupo?> = _grupo
+
+    init {
+        viewModelScope.launch {
+            _grupo.value = grupoRepository.obtenerGrupoPorId(grupoId)
+        }
+    }
 
     val gastos: StateFlow<List<Gasto>> = gastoRepository.obtenerGastosDeGrupo(grupoId)
         .stateIn(
