@@ -31,6 +31,7 @@ import com.miguelzapata.splitsnap.ui.viewmodel.GastoViewModel
 @Composable
 fun DetalleScreen(
     onVolverClick: () -> Unit,
+    onBalanceClick: () -> Unit,
     viewModel: GastoViewModel = hiltViewModel()
 ) {
     val grupo by viewModel.grupo.collectAsState()
@@ -63,6 +64,13 @@ fun DetalleScreen(
 
             Text(text = grupo?.nombre ?: "Cargando...")
             Text(text = "Miembros: ${miembros.joinToString(", ")}")
+
+            Button(
+                onClick = onBalanceClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Ver balance y deudas")
+            }
 
             Text(text = if (gastoEnEdicion == null) "Agregar gasto" else "Editando gasto")
 
