@@ -3,6 +3,7 @@ package com.miguelzapata.splitsnap.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,10 +23,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelzapata.splitsnap.ui.components.EstadoVacio
+import com.miguelzapata.splitsnap.ui.components.SelectorModoOscuro
 import com.miguelzapata.splitsnap.ui.components.TarjetaGrupo
 import com.miguelzapata.splitsnap.ui.components.TarjetaSuave
 import com.miguelzapata.splitsnap.ui.viewmodel.GruposViewModel
@@ -33,6 +36,8 @@ import com.miguelzapata.splitsnap.ui.viewmodel.GruposViewModel
 @Composable
 fun GruposScreen(
     onGrupoClick: (Long) -> Unit,
+    modoOscuro: Boolean,
+    onCambiarModo: (Boolean) -> Unit,
     viewModel: GruposViewModel = hiltViewModel()
 ) {
     val grupos by viewModel.grupos.collectAsState()
@@ -52,15 +57,28 @@ fun GruposScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        text = "SplitSnap",
-                        style = MaterialTheme.typography.displaySmall
-                    )
-                    Text(
-                        text = "Divide gastos sin complicaciones",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "SplitSnap",
+                            style = MaterialTheme.typography.displaySmall
+                        )
+                        Text(
+                            text = "Divide gastos sin complicaciones",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    SelectorModoOscuro(
+                        modoOscuro = modoOscuro,
+                        onCambio = onCambiarModo
                     )
                 }
             }
